@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory; // **[PASTIKAN BARIS INI ADA]**
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+use App\Models\ProductImage; // **[PASTIKAN BARIS INI ADA]** untuk relasi ke ProductImage
+
+class Product extends Model
+{
+    use HasFactory;
+    protected $guarded = [];
+
+    /**
+     * Get all of the images for the Product.
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    /**
+     * Get the first image as the main image.
+     */
+    public function mainImage(): HasOne
+    {
+        return $this->hasOne(ProductImage::class)->oldestOfMany();
+    }
+}
