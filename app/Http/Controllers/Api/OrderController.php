@@ -11,6 +11,8 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // <-- Import DB Facade
+use App\Enums\OrderStatus;
+
 
 class OrderController extends Controller
 {
@@ -117,5 +119,42 @@ class OrderController extends Controller
                 'error' => $th->getMessage() // Hanya untuk development
             ], 500);
         }
+    }
+
+        /**
+     * Memberikan ringkasan jumlah pesanan berdasarkan status untuk pengguna yang login.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function summary(Request $request)
+    {
+        // 1. Dapatkan ID pengguna yang sedang login
+        $userId = $request->user()->id;
+
+        // 2. Buat daftar semua status yang mungkin dari Enum dengan nilai default 0
+        // Ini memastikan semua kunci status ada di respons, bahkan jika jumlahnya 0.
+        $allStatuses = array_map(fn($case) => $case->value, OrderStatus::cases());
+        $summary = array_fill_keys($allStatuses, 0);
+
+        // 3. Lakukan query yang efisien untuk menghitung pesanan per status
+        $counts = Order::query()
+            ->where('user_id', $userId)
+            // Pilih kolom status dan hitung total untuk setiap grup
+            ->select('status', DB::raw('count(*) as total'))
+            // Kelompokkan hasil berdasarkan status
+            ->groupBy('status')
+            // Ubah hasil menjadi array asosiatif [status => total]
+            ->pluck('total', 'status')
+            ->all();
+
+        // 4. Gabungkan hasil dari database ke dalam array summary kita
+        // Ini akan menimpa nilai 0 dengan jumlah yang sebenarnya jika ada.
+        $summary = array_merge($summary, $counts);
+        
+        // 5. Kembalikan respons dalam format yang diminta
+        return response()->json([
+            'data' => $summary
+        ]);
     }
 }

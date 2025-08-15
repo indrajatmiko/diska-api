@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ShippingController;
+use App\Http\Controllers\Api\WarehouseController;
 
 // Rute publik (tidak perlu login)
 Route::post('/register', [AuthController::class, 'register']);
@@ -16,6 +18,9 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/banners/{banner}', [BannerController::class, 'show']);
 Route::get('/banners/{banner}/related', [BannerController::class, 'related']);
+Route::get('/provinces', [ShippingController::class, 'getProvinces']);
+Route::get('/cities', [ShippingController::class, 'getCities']);
+Route::get('/subdistricts', [ShippingController::class, 'getSubdistricts']);
 
 // Rute yang dilindungi (harus login dan membawa token)
 Route::middleware('auth:sanctum')->group(function () {
@@ -30,10 +35,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     // Endpoint untuk riwayat pesanan pengguna
     Route::get('/orders', [OrderController::class, 'index']);
-    
+    Route::get('/orders/summary', [OrderController::class, 'summary']);
     Route::post('/cost', [ShippingController::class, 'getCost']);
 
     // API PINTAR UNTUK MENENTUKAN GUDANG ASAL
     Route::get('/get-origin-warehouse', [ShippingController::class, 'getOriginWarehouse']);
-
+    
+    Route::post('/cost', [ShippingController::class, 'getCost']);
+    Route::get('/warehouses', [WarehouseController::class, 'index']);
+    Route::get('/warehouses/{warehouse}', [WarehouseController::class, 'show']);
+    
 });

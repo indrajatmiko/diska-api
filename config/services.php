@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+    'komerce' => [
+        'api_key' => env('KOMERCE_API_KEY'),
+    ],
 ];
