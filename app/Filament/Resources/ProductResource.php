@@ -17,6 +17,9 @@ class ProductResource extends Resource
     protected static ?string $model = Product::class;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
+    protected static ?string $navigationGroup = 'Aplikasi';
+    protected static ?int $navigationSort = 1; // Urutan pertama di grup Katalog
+
     public static function form(Form $form): Form
     {
         return $form

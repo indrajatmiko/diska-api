@@ -19,6 +19,7 @@ class BannerResource extends Resource
     // Ikon yang representatif untuk banner
     protected static ?string $navigationIcon = 'heroicon-o-photo';
     protected static ?int $navigationSort = 2; // Urutan di sidebar
+    protected static ?string $navigationGroup = 'Aplikasi'; // Grup di sidebar
 
     public static function form(Form $form): Form
     {
