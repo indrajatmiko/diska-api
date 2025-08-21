@@ -68,7 +68,8 @@ class OrderResource extends Resource
                             // Ganti KeyValue dengan TextInput individual
                             TextInput::make('province')->label('Provinsi')->disabled(),
                             TextInput::make('city')->label('Kota/Kabupaten')->disabled(),
-                            TextInput::make('subdistrict')->label('Kecamatan')->disabled(),
+                            TextInput::make('district')->label('Kecamatan')->disabled(),
+                            TextInput::make('subdistrict')->label('Kelurahan/Desa')->disabled(),
                             TextInput::make('postal_code')->label('Kode Pos')->disabled(),
                             // Gunakan Textarea untuk alamat detail agar lebih luas
                             Textarea::make('address_detail')

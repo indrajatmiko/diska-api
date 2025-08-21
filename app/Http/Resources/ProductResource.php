@@ -24,7 +24,7 @@ class ProductResource extends JsonResource
             // `whenLoaded` memastikan relasi hanya diakses jika sudah di-load sebelumnya
             // untuk mencegah N+1 query problem. Kita akan handle loading di controller.
             // Opsi sederhana: langsung akses relasi.
-            'imageUrl' => $this->mainImage->image_url ?? null,
+            'imageUrl' => $this->mainImage->full_url ?? null,
 
             'rating' => $this->rating,
             'sold' => $this->sold,

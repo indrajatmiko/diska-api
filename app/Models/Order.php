@@ -24,6 +24,7 @@ class Order extends Model
         'courier',
         'province',
         'city',
+        'district',
         'subdistrict',
         'postal_code',
         'address_detail',

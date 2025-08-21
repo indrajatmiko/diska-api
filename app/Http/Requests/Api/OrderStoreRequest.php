@@ -31,13 +31,15 @@ class OrderStoreRequest extends FormRequest
             'shipping_address' => 'required|array',
             'shipping_address.province' => 'required|string|max:255',
             'shipping_address.city' => 'required|string|max:255',
+            'shipping_address.district' => 'required|string|max:255',
             'shipping_address.subdistrict' => 'required|string|max:255',
             'shipping_address.postal_code' => 'required|string|max:20',
             'shipping_address.address_detail' => 'required|string|max:1000',
 
             // Validasi item-item yang dibeli
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|integer|exists:products,id', // Pastikan produk ada di DB
+            'items.*.variant_id' => 'required|integer|exists:product_variants,id',
+            'items.*.product_id' => 'prohibited', // Larang pengiriman product_id
             'items.*.quantity' => 'required|integer|min:1',
         ];
     }

@@ -29,4 +29,17 @@ class Product extends Model
     {
         return $this->hasOne(ProductImage::class)->oldestOfMany();
     }
+
+    /**
+     * Sebuah produk memiliki banyak ulasan.
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
 }

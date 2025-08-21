@@ -55,6 +55,7 @@ class OrderController extends Controller
         $validatedData = $request->validated();
         $items = $validatedData['items'];
         $shippingAddress = $validatedData['shipping_address'];
+        $variant = ProductVariant::find($item['variant_id']);
 
         // Ambil ID produk untuk query
         $productIds = array_column($items, 'product_id');
@@ -86,18 +87,20 @@ class OrderController extends Controller
                     'courier' => $validatedData['courier'],
                     'province' => $shippingAddress['province'],
                     'city' => $shippingAddress['city'],
+                    'district' => $shippingAddress['district'],
                     'subdistrict' => $shippingAddress['subdistrict'],
                     'postal_code' => $shippingAddress['postal_code'],
                     'address_detail' => $shippingAddress['address_detail'],
                 ]);
-
+                
                 // 2. Buat entitas OrderItem untuk setiap item
                 $orderItems = [];
                 foreach ($items as $item) {
                     $product = $products[$item['product_id']];
                     $orderItems[] = [
                         'order_id' => $order->id,
-                        'product_id' => $product->id,
+                        'product_id' => $variant->product_id, // Simpan juga product_id induknya
+                        'price' => $variant->price, // <-- Gunakan harga dari varian
                         'quantity' => $item['quantity'],
                         'price' => $product->price, // Ambil harga dari DB, bukan dari request
                         'created_at' => now(),

@@ -7,6 +7,8 @@ use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Http\Resources\ProductVariantResource; // Import untuk ProductVariantResource
+use App\Models\ProductVariant; // Import untuk model ProductVariant
 
 class ProductController extends Controller
 {
@@ -20,7 +22,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         // **[PERBAIKAN]** Gunakan `load('images')` untuk memuat relasi
-        $product->load('images');
+        $product->load(['images', 'reviews', 'variants']);
         return new ProductDetailResource($product);
     }
 }

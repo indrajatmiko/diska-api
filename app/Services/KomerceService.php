@@ -53,7 +53,7 @@ class KomerceService
      * Mengambil kecamatan berdasarkan ID Kota.
      * ID Kota menjadi bagian dari URL.
      */
-    public function getSubdistricts(string $cityId)
+    public function getDistricts(string $cityId)
     {
         // BENAR: Menyusun endpoint dengan ID kota di dalamnya.
         // Hasil: /district/149

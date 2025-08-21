@@ -11,6 +11,8 @@ use App\Models\Province; // <-- 1. Tambahkan import untuk model Province
 use App\Http\Resources\ProvinceResource; // <-- 2. Tambahkan import untuk Resource
 use App\Http\Resources\CityResource; // <-- Import CityResource
 use App\Models\City; // <-- Import City Model
+use App\Http\Resources\DistrictResource; // <-- Import DistrictResource
+use App\Models\District; // <-- Import District Model
 
 class ShippingController extends Controller
 {
@@ -44,6 +46,38 @@ class ShippingController extends Controller
         return CityResource::collection($cities);
     }
 
+    /**
+     * Mengambil daftar kecamatan berdasarkan ID Kota/Kabupaten dari database lokal.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
+     */
+    public function getDistricts(Request $request)
+    {
+        // 3. Validasi input: pastikan city_id ada dan valid
+        $request->validate(['city_id' => 'required|exists:cities,id']);
+
+        // 4. Ambil semua kecamatan yang city_id-nya cocok, urutkan berdasarkan nama
+        $districts = District::where('city_id', $request->city_id)
+            ->orderBy('name')
+            ->get();
+
+        // (Opsional) Jika tidak ada data kecamatan untuk kota tersebut di cache
+        if ($districts->isEmpty()) {
+            // Kita bisa mengembalikan array kosong dengan pesan yang jelas
+            return response()->json([
+                'data' => [],
+                'meta' => [
+                    'message' => 'Data kecamatan untuk kota ini belum tersedia di cache lokal.'
+                ]
+            ]);
+        }
+            
+        // 5. Kembalikan data menggunakan Resource Collection
+        // Ini akan otomatis membungkus hasilnya dalam kunci "data"
+        return DistrictResource::collection($districts);
+    }
+
     public function _komerce_getCities(Request $request)
     {
         $request->validate(['province_id' => 'required']);
@@ -51,7 +85,7 @@ class ShippingController extends Controller
         return $response->json();
     }
 
-    public function getSubdistricts(Request $request)
+    public function _komerce_getSubdistricts(Request $request)
     {
         $request->validate(['city_id' => 'required']);
         $response = $this->komerceService->getSubdistricts($request->city_id);
