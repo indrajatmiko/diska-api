@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vouchers/check', [VoucherController::class, 'check']);
 
     // API PINTAR UNTUK MENENTUKAN GUDANG ASAL
-    Route::get('/get-origin-warehouse', [ShippingController::class, 'getOriginWarehouse']);
+    Route::get('/origin-warehouse', [ShippingController::class, 'getOriginWarehouse']);
     
     Route::post('/cost', [ShippingController::class, 'getCost']);
     Route::get('/warehouses', [WarehouseController::class, 'index']);

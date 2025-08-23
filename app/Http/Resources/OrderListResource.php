@@ -14,29 +14,36 @@ class OrderListResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Muat relasi yang dibutuhkan untuk menghindari N+1 problem
-        $this->loadMissing('items.product.images');
+        // =========================================================
+        // ==> PERBAIKAN #1: Eager load relasi yang benar untuk efisiensi <==
+        // =========================================================
+        // Kita butuh item, produk dari item, dan gambar utama dari produk.
+        $this->loadMissing('items.product.mainImage');
         
         $firstItem = $this->items->first();
         $totalItems = $this->items->count();
 
         // Buat ringkasan item untuk ditampilkan
         $itemsSummary = '';
-        if ($firstItem) {
+        if ($firstItem && $firstItem->product) {
             $itemsSummary = $firstItem->product->name;
             if ($totalItems > 1) {
                 $itemsSummary .= ' dan ' . ($totalItems - 1) . ' item lainnya';
             }
         }
         
-        // Dapatkan gambar utama dari item pertama
-        $mainImageUrl = $firstItem ? optional($firstItem->product->images->first())->image_url : null;
+        // =========================================================
+        // ==> PERBAIKAN #2: Gunakan accessor 'full_url' <==
+        // =========================================================
+        // LAMA: optional($firstItem->product->images->first())->image_url
+        // BARU: Menggunakan relasi 'mainImage' dan accessor 'full_url' yang sudah ada
+        $mainImageUrl = optional($firstItem)->product->mainImage->full_url ?? null;
         
         return [
-            'orderId' => 'INV-' . $this->id,
+            'orderId' => 'INV-' . $this->created_at->format('Ymd') . $this->id,
             'status' => [
                 'value' => $this->status->value,
-                'label' => $this->status->getLabel(), // Mengambil label dari Enum
+                'label' => $this->status->getLabel(),
             ],
             'date' => $this->created_at->format('d M Y, H:i'),
             'totalAmount' => $this->total_amount,

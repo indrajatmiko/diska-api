@@ -13,6 +13,7 @@ use App\Http\Resources\CityResource; // <-- Import CityResource
 use App\Models\City; // <-- Import City Model
 use App\Http\Resources\DistrictResource; // <-- Import DistrictResource
 use App\Models\District; // <-- Import District Model
+use App\Http\Resources\OriginWarehouseResource; // <-- Import OriginWarehouseResource
 
 class ShippingController extends Controller
 {
@@ -106,52 +107,46 @@ class ShippingController extends Controller
         return $response->json();
     }
 
-    /**
-     * Menentukan gudang asal pengiriman berdasarkan provinsi tujuan pelanggan.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+        /**
+     * Menentukan gudang pengiriman yang optimal berdasarkan lokasi tujuan pelanggan.
+     * Logika: Cek cakupan Kota -> Cek cakupan Provinsi -> Gunakan Default.
      */
     public function getOriginWarehouse(Request $request)
     {
-        // 1. Validasi input dari frontend
-        $request->validate([
-            'province_id' => 'required|string',
+        $validated = $request->validate([
+            'province_id' => 'required|exists:provinces,id',
+            'city_id' => 'required|exists:cities,id',
         ]);
 
-        $provinceId = $request->province_id;
+        $cityId = $validated['city_id'];
+        $provinceId = $validated['province_id'];
         $warehouse = null;
 
-        // 2. Cari gudang berdasarkan cakupan provinsi
-        // Kita cari di tabel WarehouseCoverage yang province_id-nya cocok
-        $coverage = WarehouseCoverage::with('warehouse')
-            ->where('province_id', $provinceId)
-            ->first();
+        // 1. Cek cakupan level KOTA (paling spesifik)
+        $warehouse = Warehouse::whereHas('coverages', function ($query) use ($cityId) {
+            $query->where('coverage_type', 'city')->where('coverage_id', $cityId);
+        })->first();
 
-        if ($coverage) {
-            // Jika ditemukan, gunakan gudang yang terhubung dengannya
-            $warehouse = $coverage->warehouse;
-        } else {
-            // 3. Jika tidak ada cakupan spesifik, cari gudang default
+        // 2. Jika tidak ditemukan, cek cakupan level PROVINSI
+        if (!$warehouse) {
+            $warehouse = Warehouse::whereHas('coverages', function ($query) use ($provinceId) {
+                $query->where('coverage_type', 'province')->where('coverage_id', $provinceId);
+            })->first();
+        }
+
+        // 3. Jika masih tidak ditemukan, cari GUDANG DEFAULT
+        if (!$warehouse) {
             $warehouse = Warehouse::where('is_default', true)->first();
         }
 
-        // 4. Jika gudang (baik spesifik maupun default) ditemukan
+        // 4. Jika gudang berhasil ditentukan
         if ($warehouse) {
-            // Kembalikan respons dengan format yang disederhanakan
-            return response()->json([
-                'data' => [
-                    'id' => $warehouse->id, // ID gudang untuk referensi internal jika perlu
-                    'name' => $warehouse->name, // Nama gudang untuk display
-                    'cityId' => $warehouse->city_id, // ID Kota asal untuk kalkulasi ongkir
-                ]
-            ]);
+            return new OriginWarehouseResource($warehouse);
         }
 
-        // 5. Kasus Error: Tidak ada gudang yang bisa ditentukan
-        // Ini terjadi jika tidak ada cakupan & tidak ada gudang default yang di-set.
+        // 5. Kasus Error: Tidak ada gudang yang bisa ditentukan (kesalahan konfigurasi)
         return response()->json([
             'message' => 'Tidak dapat menentukan gudang asal pengiriman. Harap hubungi administrator.'
-        ], 500); // 500 karena ini adalah kesalahan konfigurasi di server
+        ], 500);
     }
 }

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log; // <-- Tambahkan ini di atas file
 use App\Models\Province;
 use App\Http\Resources\CityResource; // <-- Import CityResource
 use App\Models\City; // <-- Import City Model
+use App\Models\District; // <-- Import District Model
 
 class WarehouseResource extends Resource
 {
@@ -63,13 +64,48 @@ class WarehouseResource extends Resource
                     ->afterStateUpdated(function (Set $set, ?string $state, Select $component) {
                         if (blank($state)) {
                             $set('city_name', null);
+                            $set('district_id', null); // <-- Reset district jika kota berubah
                             return;
                         }
                         $label = $component->getOptionLabel($state);
                         $set('city_name', $label);
+                        $set('district_id', null); // <-- Reset district jika kota berubah
                     }),
 
+Select::make('district_id')
+                    ->label('Pilih Kecamatan Lokasi Gudang')
+                    ->options(function (Get $get): \Illuminate\Support\Collection {
+                        $cityId = $get('city_id');
+                        if (!$cityId) return collect();
+                        
+                        // Cek apakah data kecamatan sudah di-cache di DB
+                        $districts = District::where('city_id', $cityId)->orderBy('name')->pluck('name', 'id');
+                        
+                        // Jika tidak ada, panggil API sebagai fallback
+                        if ($districts->isEmpty()) {
+                            try {
+                                $response = (new \App\Services\KomerceService())->getSubdistricts($cityId);
+                                if ($response->successful()) {
+                                    $data = $response->json()['data'] ?? [];
+                                    return collect($data)->filter(fn ($item) => !empty($item['name']))->pluck('name', 'id');
+                                }
+                            } catch (\Exception $e) { return collect(); }
+                        }
+                        return $districts;
+                    })
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function (Set $set, ?string $state, Select $component) {
+                        if (blank($state)) {
+                            $set('district_name', null);
+                            return;
+                        }
+                        $label = $component->getOptionLabel($state);
+                        $set('district_name', $label);
+                    }),
+                
                 Forms\Components\Hidden::make('city_name'),
+                Forms\Components\Hidden::make('district_name'), // <-- Tambahkan ini
                 Forms\Components\Toggle::make('is_default')->label('Jadikan Gudang Default'),
             ]);
     }

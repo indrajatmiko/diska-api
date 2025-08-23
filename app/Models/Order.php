@@ -22,6 +22,8 @@ class Order extends Model
         'total_amount',
         'shipping_cost',
         'courier',
+        'product_voucher_code',  // <-- TAMBAHKAN INI
+        'shipping_voucher_code', // <-- TAMBAHKAN INI
         'province',
         'city',
         'district',

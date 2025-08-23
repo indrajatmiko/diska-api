@@ -18,7 +18,7 @@ class OrderCreationResource extends JsonResource
     {
         return [
             'message' => 'Order created successfully',
-            'orderId' => 'INV-' . $this->id,
+            'orderId' => 'INV-' . $this->created_at->format('Ymd') . $this->id,
             'totalAmount' => $this->total_amount,
         ];
     }

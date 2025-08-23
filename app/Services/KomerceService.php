@@ -12,58 +12,70 @@ class KomerceService
     public function __construct()
     {
         $this->apiKey = config('services.komerce.api_key');
-        $this->baseUrl = 'https://rajaongkir.komerce.id/api/v1/destination'; // Base URL dari dokumentasi
+        // PERBAIKAN: Gunakan base URL yang lebih tinggi (level v1)
+        $this->baseUrl = 'https://rajaongkir.komerce.id/api/v1'; 
     }
 
+    /**
+     * Metode internal ini tidak perlu diubah.
+     */
     protected function makeRequest(string $method, string $endpoint, array $data = [])
     {
         $request = Http::withHeaders([
             'key' => $this->apiKey,
-        ])->acceptJson();
+        ])->acceptJson()->asForm();
+
+        $fullUrl = $this->baseUrl . $endpoint;
 
         if ($method === 'GET') {
-            return $request->get($this->baseUrl . $endpoint, $data);
+            return $request->get($fullUrl);
         }
 
         if ($method === 'POST') {
-            return $request->post($this->baseUrl . $endpoint, $data);
+            return $request->post($fullUrl, $data);
         }
         
         return null;
     }
 
+    /**
+     * Mengambil semua provinsi.
+     */
     public function getProvinces()
     {
-        return $this->makeRequest('GET', '/province');
+        // PERBAIKAN: Sertakan path '/destination' di sini
+        return $this->makeRequest('GET', '/destination/province');
     }
 
     /**
      * Mengambil kota berdasarkan ID Provinsi.
-     * ID Provinsi menjadi bagian dari URL.
      */
     public function getCities(string $provinceId)
     {
-        // BENAR: Menyusun endpoint dengan ID provinsi di dalamnya.
-        // Hasil: /city/1
-        $endpoint = "/city/{$provinceId}";
+        // PERBAIKAN: Sertakan path '/destination' di sini
+        $endpoint = "/destination/city/{$provinceId}";
         return $this->makeRequest('GET', $endpoint);
     }
 
     /**
      * Mengambil kecamatan berdasarkan ID Kota.
-     * ID Kota menjadi bagian dari URL.
      */
-    public function getDistricts(string $cityId)
+    public function getDistricts(string $cityId) // Anda mungkin menamai ini getDistricts
     {
-        // BENAR: Menyusun endpoint dengan ID kota di dalamnya.
-        // Hasil: /district/149
-        $endpoint = "/district/{$cityId}";
+        // PERBAIKAN: Sertakan path '/destination' di sini
+        $endpoint = "/destination/district/{$cityId}";
         return $this->makeRequest('GET', $endpoint);
     }
 
+    /**
+     * Menghitung ongkos kirim.
+     */
     public function getShippingCost(array $data)
     {
-        // Data harus berisi: origin, destination, weight, courier
-        return $this->makeRequest('POST', '/domestic-cost', $data);
+        // =========================================================
+        // ==> PERBAIKAN UTAMA DAN PALING PENTING ADA DI SINI <==
+        // =========================================================
+        // BENAR: Menggunakan path '/calculate/district/domestic-cost' yang benar
+        return $this->makeRequest('POST', '/calculate/district/domestic-cost', $data);
     }
 }

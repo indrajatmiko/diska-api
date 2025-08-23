@@ -12,7 +12,8 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // <-- Import DB Facade
 use App\Enums\OrderStatus;
-
+use App\Models\ProductVariant;
+use App\Models\Voucher;
 
 class OrderController extends Controller
 {
@@ -49,78 +50,91 @@ class OrderController extends Controller
      * @param OrderStoreRequest $request
      * @return OrderCreationResource|\Illuminate\Http\JsonResponse
      */
-    public function store(OrderStoreRequest $request)
+    public function store(OrderStoreRequest $request) // Gunakan OrderStoreRequest yang sudah ada
     {
-        // Ambil data yang sudah divalidasi
         $validatedData = $request->validated();
         $items = $validatedData['items'];
         $shippingAddress = $validatedData['shipping_address'];
-        $variant = ProductVariant::find($item['variant_id']);
 
-        // Ambil ID produk untuk query
-        $productIds = array_column($items, 'product_id');
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-
-        // ---- PERHITUNGAN ULANG DI BACKEND (SANGAT PENTING!) ----
-        // Jangan pernah percaya total harga yang dikirim dari frontend.
+        // --- Kalkulasi Ulang di Backend (Keamanan) ---
         $subtotal = 0;
-        foreach ($items as $item) {
-            // Pastikan produk ada, jika tidak, batalkan (meski sudah divalidasi)
-            if (!isset($products[$item['product_id']])) {
-                return response()->json(['message' => 'Produk tidak valid ditemukan.'], 422);
+        $variantIds = array_column($items, 'variant_id');
+        $variants = ProductVariant::whereIn('id', $variantIds)->get()->keyBy('id');
+
+        foreach ($items as $itemData) {
+            $variant = $variants[$itemData['variant_id']] ?? null;
+            if (!$variant || $variant->stock < $itemData['quantity']) {
+                return response()->json(['message' => 'Stok produk tidak mencukupi atau produk tidak valid.'], 422);
             }
-            $product = $products[$item['product_id']];
-            $subtotal += $product->price * $item['quantity'];
+            $subtotal += $variant->price * $itemData['quantity'];
         }
 
-        $totalAmount = $subtotal + $validatedData['shipping_cost'];
-        // --------------------------------------------------------
+        // --- Validasi & Kalkulasi Voucher ---
+        $productDiscount = 0;
+        $shippingDiscount = 0;
+        // (Asumsikan Anda sudah memiliki helper 'validateVoucher' di controller ini)
+        if (!empty($validatedData['product_voucher_code'])) {
+            $productVoucher = $this->validateVoucher($validatedData['product_voucher_code'], 'product', $subtotal);
+            if (!$productVoucher instanceof Voucher) { // Jika validasi gagal
+                return response()->json(['message' => 'Voucher produk tidak valid.', 'errors' => ['product_voucher_code' => $productVoucher['error']]], 422);
+            }
+            if ($productVoucher->type === 'product_fixed') $productDiscount = $productVoucher->value;
+            if ($productVoucher->type === 'product_percentage') $productDiscount = floor(($productVoucher->value / 100) * $subtotal);
+        }
+
+        if (!empty($validatedData['shipping_voucher_code'])) {
+            $shippingVoucher = $this->validateVoucher($validatedData['shipping_voucher_code'], 'shipping', $subtotal);
+            if (!$shippingVoucher instanceof Voucher) { // Jika validasi gagal
+                return response()->json(['message' => 'Voucher ongkir tidak valid.', 'errors' => ['shipping_voucher_code' => $shippingVoucher['error']]], 422);
+            }
+            $shippingDiscount = min($shippingVoucher->value, $validatedData['shipping_cost']);
+        }
+        
+        $totalAmount = ($subtotal - $productDiscount) + ($validatedData['shipping_cost'] - $shippingDiscount);
 
         try {
-            $order = DB::transaction(function () use ($request, $validatedData, $shippingAddress, $totalAmount, $items, $products) {
-                // 1. Buat entitas Order utama
+            $order = DB::transaction(function () use ($request, $validatedData, $shippingAddress, $totalAmount, $items, $variants) {
                 $order = Order::create([
                     'user_id' => $request->user()->id,
-                    'status' => 'unpaid', // Status default
+                    'status' => 'unpaid',
                     'total_amount' => $totalAmount,
                     'shipping_cost' => $validatedData['shipping_cost'],
                     'courier' => $validatedData['courier'],
+                    'product_voucher_code' => $validatedData['product_voucher_code'] ?? null,
+                    'shipping_voucher_code' => $validatedData['shipping_voucher_code'] ?? null,
                     'province' => $shippingAddress['province'],
                     'city' => $shippingAddress['city'],
                     'district' => $shippingAddress['district'],
-                    'subdistrict' => $shippingAddress['subdistrict'],
-                    'postal_code' => $shippingAddress['postal_code'],
+                    'subdistrict' => $shippingAddress['sub_district'] ?? null,
+                    'postal_code' => $shippingAddress['postal_code'] ?? '00000',
                     'address_detail' => $shippingAddress['address_detail'],
                 ]);
-                
-                // 2. Buat entitas OrderItem untuk setiap item
-                $orderItems = [];
-                foreach ($items as $item) {
-                    $product = $products[$item['product_id']];
-                    $orderItems[] = [
-                        'order_id' => $order->id,
-                        'product_id' => $variant->product_id, // Simpan juga product_id induknya
-                        'price' => $variant->price, // <-- Gunakan harga dari varian
+
+                // =========================================================
+                // ==> INTI PERBAIKAN: Perulangan foreach yang benar ada di sini <==
+                // =========================================================
+                foreach ($items as $item) { // Variabel $item didefinisikan DI SINI
+                    $variant = $variants[$item['variant_id']];
+                    
+                    // Simpan Order Item
+                    $order->items()->create([
+                        'product_id' => $variant->product_id,
+                        'product_variant_id' => $variant->id, // Simpan juga ID variannya
                         'quantity' => $item['quantity'],
-                        'price' => $product->price, // Ambil harga dari DB, bukan dari request
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
+                        'price' => $variant->price,
+                    ]);
+                    
+                    // Kurangi Stok
+                    $variant->decrement('stock', $item['quantity']);
                 }
-                OrderItem::insert($orderItems);
 
                 return $order;
             });
 
-            // Jika transaksi berhasil, kembalikan response sukses
             return new OrderCreationResource($order);
 
         } catch (\Throwable $th) {
-            // Jika terjadi error selama transaksi
-            return response()->json([
-                'message' => 'Gagal membuat pesanan, silakan coba lagi.',
-                'error' => $th->getMessage() // Hanya untuk development
-            ], 500);
+            return response()->json(['message' => 'Gagal membuat pesanan, silakan coba lagi.', 'error' => $th->getMessage()], 500);
         }
     }
 
@@ -159,5 +173,35 @@ class OrderController extends Controller
         return response()->json([
             'data' => $summary
         ]);
+    }
+
+    /**
+     * Helper function untuk memvalidasi satu voucher.
+     * @param string $code
+     * @param string $voucherCategory 'product' atau 'shipping'
+     * @param int $subtotal
+     * @return Voucher|array
+     */
+    private function validateVoucher(string $code, string $voucherCategory, int $subtotal)
+    {
+        $voucher = Voucher::where('code', $code)->first();
+        $now = now();
+
+        if (!$voucher) return ['error' => 'Kode tidak ditemukan.'];
+        
+        // Cek tipe voucher
+        if ($voucherCategory === 'product' && !in_array($voucher->type, ['product_fixed', 'product_percentage'])) {
+            return ['error' => 'Kode ini bukan untuk diskon produk.'];
+        }
+        if ($voucherCategory === 'shipping' && $voucher->type !== 'shipping_fixed') {
+            return ['error' => 'Kode ini bukan untuk subsidi ongkir.'];
+        }
+
+        if (!$voucher->is_active) return ['error' => 'Voucher sudah tidak aktif.'];
+        if ($now->isBefore($voucher->start_date)) return ['error' => 'Voucher belum dapat digunakan.'];
+        if ($now->isAfter($voucher->end_date)) return ['error' => 'Voucher telah kedaluwarsa.'];
+        if ($subtotal < $voucher->min_purchase) return ['error' => 'Pembelian tidak memenuhi syarat minimal.'];
+
+        return $voucher;
     }
 }

@@ -27,7 +27,7 @@ class BannerController extends Controller
 
     public function show(Banner $banner)
     {
-        return new BannerDetailResource($banner);
+        return new BannerResource($banner);
     }
 
     /**

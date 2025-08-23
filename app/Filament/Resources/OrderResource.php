@@ -58,6 +58,14 @@ class OrderResource extends Resource
                                 ->required(),
                             
                             TextInput::make('courier')->label('Kurir')->disabled(),
+                            TextInput::make('product_voucher_code')
+                                ->label('Voucher Produk')
+                                ->placeholder('-') // Tampilkan strip jika kosong
+                                ->disabled(),
+                            TextInput::make('shipping_voucher_code')
+                                ->label('Voucher Ongkir')
+                                ->placeholder('-') // Tampilkan strip jika kosong
+                                ->disabled(),
                             TextInput::make('total_amount')->label('Total Bayar')->numeric()->prefix('Rp')->disabled(),
                             TextInput::make('shipping_cost')->label('Ongkos Kirim')->numeric()->prefix('Rp')->disabled(),
                         ])->columnSpan(2),
