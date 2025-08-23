@@ -18,11 +18,11 @@ public function up(): void
         $table->integer('total_amount'); // Total dalam sen/rupiah tanpa desimal
         $table->integer('shipping_cost');
         $table->string('courier');
-        $table->string('province')->after('courier');
-        $table->string('city')->after('province');
-        $table->string('subdistrict')->after('city');
-        $table->string('postal_code')->after('subdistrict');
-        $table->text('address_detail')->after('postal_code');
+        $table->string('province');
+        $table->string('city');
+        $table->string('subdistrict');
+        $table->string('postal_code');
+        $table->text('address_detail');
         $table->timestamps();
     });
 }
