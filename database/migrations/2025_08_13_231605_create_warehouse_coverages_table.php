@@ -27,8 +27,13 @@ return new class extends Migration
             // Timestamps
             $table->timestamps();
 
-            // Unique constraint final untuk memastikan tidak ada duplikasi cakupan
-            $table->unique(['warehouse_id', 'coverage_type', 'coverage_id']);
+            // --- FIX IS HERE ---
+            // Unique constraint final dengan NAMA KUSTOM YANG LEBIH PENDEK
+            // untuk menghindari error nama terlalu panjang.
+            $table->unique(
+                ['warehouse_id', 'coverage_type', 'coverage_id'],
+                'warehouse_coverage_unique_idx' // <-- Nama kustom yang lebih pendek
+            );
         });
     }
 
