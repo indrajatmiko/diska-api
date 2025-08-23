@@ -7,24 +7,35 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Menjalankan migrasi.
+     *
+     * File ini mendefinisikan skema final dari tabel warehouse_coverages secara langsung,
+     * menggabungkan migrasi create dan modify menjadi satu.
      */
-public function up(): void
-{
-    Schema::create('warehouse_coverages', function (Blueprint $table) {
-        $table->id();
-        // Relasi ke gudang
-        $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade');
-        // ID Provinsi dari RajaOngkir yang dicakup oleh gudang ini
-        $table->string('province_id'); 
-        
-        // Pastikan kombinasi gudang dan provinsi unik
-        $table->unique(['warehouse_id', 'province_id']);
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('warehouse_coverages', function (Blueprint $table) {
+            // Kolom dasar
+            $table->id();
+            $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade');
+            
+            // Kolom final yang fleksibel (menggantikan province_id)
+            $table->string('coverage_type'); // Tipe: 'province' atau 'city'
+            $table->string('coverage_id');   // ID dari provinsi atau kota
+            $table->string('coverage_name'); // Nama provinsi atau kota
+            
+            // Timestamps
+            $table->timestamps();
+
+            // Unique constraint final untuk memastikan tidak ada duplikasi cakupan
+            $table->unique(['warehouse_id', 'coverage_type', 'coverage_id']);
+        });
+    }
+
     /**
-     * Reverse the migrations.
+     * Membatalkan migrasi.
+     *
+     * Cukup hapus seluruh tabel jika migrasi ini di-rollback.
      */
     public function down(): void
     {
