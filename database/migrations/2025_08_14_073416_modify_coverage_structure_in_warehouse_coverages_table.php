@@ -17,7 +17,7 @@ return new class extends Migration
             // Note: This name might also be too long if province_id was longer. 
             // If this line fails, you might need to find the shorter auto-generated name 
             // from your database schema or provide its custom name here too.
-            $table->dropUnique('warehouse_coverages_warehouse_id_province_id_unique');
+            // $table->dropUnique('warehouse_coverages_warehouse_id_province_id_unique');
             
             // LANGKAH 2: Hapus kolom lama setelah constraint-nya dilepas.
             $table->dropColumn('province_id');
