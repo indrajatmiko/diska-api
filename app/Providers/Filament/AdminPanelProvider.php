@@ -49,7 +49,7 @@ class AdminPanelProvider extends PanelProvider
                 UserActivityChart::class,
                 ApiStatsOverview::class,
                 ApiRequestsChart::class,
-                TopApiEndpoints::class,
+                TopApiEndpoints::class, // test
             ])
             ->middleware([
                 EncryptCookies::class,
