@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -59,4 +61,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->is_admin && $panel->getId() === 'admin';
     }
+
+    public function addresses(): HasMany { return $this->hasMany(UserAddress::class); }
+
 }

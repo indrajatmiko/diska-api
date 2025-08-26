@@ -14,9 +14,14 @@ use Illuminate\Support\Facades\DB; // <-- Import DB Facade
 use App\Enums\OrderStatus;
 use App\Models\ProductVariant;
 use App\Models\Voucher;
+use App\Http\Resources\OrderDetailResource;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Tambahkan baris ini
+
 
 class OrderController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Menampilkan riwayat pesanan untuk pengguna yang sedang login.
      *
@@ -203,5 +208,26 @@ class OrderController extends Controller
         if ($subtotal < $voucher->min_purchase) return ['error' => 'Pembelian tidak memenuhi syarat minimal.'];
 
         return $voucher;
+    }
+
+    public function show($orderId)
+    {
+        // Hapus prefix "INV-" jika ada
+        $numericId = substr($orderId, 12);
+
+        // Cari order berdasarkan ID numerik
+        $order = Order::findOrFail($numericId);
+
+        // Otorisasi: Pastikan user hanya bisa melihat order miliknya
+        $this->authorize('view', $order);
+
+        // Eager load semua relasi yang dibutuhkan untuk efisiensi
+        $order->load([
+            'user', 
+            'items.product.mainImage', 
+            'items.variant'
+        ]);
+
+        return new OrderDetailResource($order);
     }
 }

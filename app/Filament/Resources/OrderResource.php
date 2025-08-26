@@ -58,6 +58,9 @@ class OrderResource extends Resource
                                 ->required(),
                             
                             TextInput::make('courier')->label('Kurir')->disabled(),
+                            TextInput::make('shipping_service')->label('Layanan Pengiriman')->disabled(),
+                            TextInput::make('tracking_number')
+                                ->label('Nomor Resi (Tracking Number)'),
                             TextInput::make('product_voucher_code')
                                 ->label('Voucher Produk')
                                 ->placeholder('-') // Tampilkan strip jika kosong
