@@ -20,7 +20,7 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function show(Product $product)
+    public function show(Product $product, ActivityLoggerService $activityLogger)
     {
         $activityLogger->log('product_viewed', $product);
         // **[PERBAIKAN]** Gunakan `load('images')` untuk memuat relasi

@@ -13,12 +13,11 @@ class VideoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, ActivityLoggerService $activityLogger)
     {
-        $activityLogger->log('video_viewed', $video);
         // Ambil parameter `limit` dari URL, default-nya null (ambil semua)
         $limit = $request->query('limit');
-
+        
         if ($limit) {
             // Jika ada limit, gunakan paginate
             $videos = Video::latest()->paginate($limit);
@@ -26,7 +25,8 @@ class VideoController extends Controller
             // Jika tidak ada limit, ambil semua
             $videos = Video::latest()->get();
         }
-
+        
+        // $activityLogger->log('video_viewed', $videos);
         // Gunakan resource untuk memformat koleksi data
         return VideoResource::collection($videos);
     }

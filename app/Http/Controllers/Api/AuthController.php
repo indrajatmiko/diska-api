@@ -14,7 +14,7 @@ class AuthController extends Controller
     /**
      * Handle user registration.
      */
-    public function register(Request $request)
+    public function register(Request $request, ActivityLoggerService $activityLogger)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',

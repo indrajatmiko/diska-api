@@ -56,7 +56,7 @@ class OrderController extends Controller
      * @param OrderStoreRequest $request
      * @return OrderCreationResource|\Illuminate\Http\JsonResponse
      */
-    public function store(OrderStoreRequest $request) // Gunakan OrderStoreRequest yang sudah ada
+    public function store(OrderStoreRequest $request, ActivityLoggerService $activityLogger) // Gunakan OrderStoreRequest yang sudah ada
     {
         $validatedData = $request->validated();
         $items = $validatedData['items'];
@@ -189,7 +189,7 @@ class OrderController extends Controller
      * @param int $subtotal
      * @return Voucher|array
      */
-    private function validateVoucher(string $code, string $voucherCategory, int $subtotal)
+    private function validateVoucher(string $code, string $voucherCategory, int $subtotal, ActivityLoggerService $activityLogger)
     {
         $voucher = Voucher::where('code', $code)->first();
         $now = now();
