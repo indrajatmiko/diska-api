@@ -29,15 +29,15 @@ class BannerResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(), // Mengambil lebar penuh
-                Forms\Components\Textarea::make('description')
-                    ->maxLength(65535)
-                    ->columnSpanFull(),
                 Forms\Components\FileUpload::make('image_url')
                     ->label('Banner Image')
                     ->image() // Validasi file sebagai gambar
                     ->disk('public') // Gunakan disk 'public'
                     ->directory('banners') // Simpan di 'storage/app/public/banners'
                     ->required()
+                    ->columnSpanFull(),
+                Forms\Components\RichEditor::make('description')
+                    ->label('Deskripsi')
                     ->columnSpanFull(),
             ]);
     }
