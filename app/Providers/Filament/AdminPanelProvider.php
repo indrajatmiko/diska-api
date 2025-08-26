@@ -18,6 +18,12 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Models\User;
+use App\Filament\Widgets\ApiRequestsChart;
+use App\Filament\Widgets\ApiStatsOverview;
+use App\Filament\Widgets\TopApiEndpoints;
+use App\Filament\Widgets\UserActivityChart;
+use App\Filament\Widgets\UserAnalyticsOverview;
+use App\Filament\Widgets\PopularContentWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -40,6 +46,12 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                UserAnalyticsOverview::class,
+                UserActivityChart::class,
+                PopularContentWidget::class,
+                ApiStatsOverview::class,
+                ApiRequestsChart::class,
+                TopApiEndpoints::class,
             ])
             ->middleware([
                 EncryptCookies::class,

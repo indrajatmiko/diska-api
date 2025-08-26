@@ -16,6 +16,7 @@ use App\Models\ProductVariant;
 use App\Models\Voucher;
 use App\Http\Resources\OrderDetailResource;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Tambahkan baris ini
+use App\Services\ActivityLoggerService;
 
 
 class OrderController extends Controller
@@ -135,7 +136,8 @@ class OrderController extends Controller
 
                 return $order;
             });
-
+            
+            $activityLogger->log('order_created', $order);
             return new OrderCreationResource($order);
 
         } catch (\Throwable $th) {
@@ -207,6 +209,7 @@ class OrderController extends Controller
         if ($now->isAfter($voucher->end_date)) return ['error' => 'Voucher telah kedaluwarsa.'];
         if ($subtotal < $voucher->min_purchase) return ['error' => 'Pembelian tidak memenuhi syarat minimal.'];
 
+        $activityLogger->log('validate_voucher', $order);
         return $voucher;
     }
 

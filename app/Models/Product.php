@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory; // **[PASTIKAN BARIS INI 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-
 use App\Models\ProductImage; // **[PASTIKAN BARIS INI ADA]** untuk relasi ke ProductImage
+use App\Models\UserActivity;
 
 class Product extends Model
 {
@@ -41,5 +41,10 @@ class Product extends Model
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function activities()
+    {
+        return $this->morphMany(UserActivity::class, 'subject');
     }
 }

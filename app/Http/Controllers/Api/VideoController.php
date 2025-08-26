@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\VideoResource;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use App\Services\ActivityLoggerService;
 
 class VideoController extends Controller
 {
@@ -14,6 +15,7 @@ class VideoController extends Controller
      */
     public function index(Request $request)
     {
+        $activityLogger->log('video_viewed', $video);
         // Ambil parameter `limit` dari URL, default-nya null (ambil semua)
         $limit = $request->query('limit');
 

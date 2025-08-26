@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Services\ActivityLoggerService;
 
 class AuthController extends Controller
 {
@@ -36,7 +37,8 @@ class AuthController extends Controller
 
         // Buat token untuk user yang baru daftar
         $token = $user->createToken('auth_token')->plainTextToken;
-
+        $activityLogger->log('user_registered', $user);
+        
         return response()->json([
             'message' => 'Registrasi berhasil',
             'access_token' => $token,

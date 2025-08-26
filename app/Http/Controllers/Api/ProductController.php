@@ -9,6 +9,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductVariantResource; // Import untuk ProductVariantResource
 use App\Models\ProductVariant; // Import untuk model ProductVariant
+use App\Services\ActivityLoggerService;
 
 class ProductController extends Controller
 {
@@ -21,6 +22,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $activityLogger->log('product_viewed', $product);
         // **[PERBAIKAN]** Gunakan `load('images')` untuk memuat relasi
         $product->load(['images', 'reviews', 'variants']);
         return new ProductDetailResource($product);
