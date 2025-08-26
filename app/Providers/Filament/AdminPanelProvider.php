@@ -23,7 +23,6 @@ use App\Filament\Widgets\ApiStatsOverview;
 use App\Filament\Widgets\TopApiEndpoints;
 use App\Filament\Widgets\UserActivityChart;
 use App\Filament\Widgets\UserAnalyticsOverview;
-use App\Filament\Widgets\PopularContentWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -48,7 +47,6 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
                 UserAnalyticsOverview::class,
                 UserActivityChart::class,
-                PopularContentWidget::class,
                 ApiStatsOverview::class,
                 ApiRequestsChart::class,
                 TopApiEndpoints::class,
