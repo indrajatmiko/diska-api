@@ -14,6 +14,7 @@ class TopApiEndpoints extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->recordKey('route')    
             ->query(
                 ApiLog::query()
                     ->select('route', DB::raw('count(*) as count'), DB::raw('avg(duration_ms) as avg_duration'))
