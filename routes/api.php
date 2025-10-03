@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PageController;
 
 // Rute publik (tidak perlu login)
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/videos', [VideoController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);

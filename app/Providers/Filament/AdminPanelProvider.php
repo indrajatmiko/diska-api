@@ -20,7 +20,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Models\User;
 use App\Filament\Widgets\ApiRequestsChart;
 use App\Filament\Widgets\ApiStatsOverview;
-use App\Filament\Widgets\TopApiEndpoints;
 use App\Filament\Widgets\UserActivityChart;
 use App\Filament\Widgets\UserAnalyticsOverview;
 
@@ -49,7 +48,6 @@ class AdminPanelProvider extends PanelProvider
                 UserActivityChart::class,
                 ApiStatsOverview::class,
                 ApiRequestsChart::class,
-                TopApiEndpoints::class, // test
             ])
             ->middleware([
                 EncryptCookies::class,

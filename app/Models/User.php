@@ -28,6 +28,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'phone_number',
         'is_admin',
+        'otp_code', 'otp_expires_at',
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'otp_expires_at' => 'datetime',
         ];
     }
 
