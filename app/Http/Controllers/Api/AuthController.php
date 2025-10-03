@@ -111,6 +111,16 @@ class AuthController extends Controller
             return response()->json(['message' => 'Nomor handphone tidak terdaftar.'], 401);
         }
         
+        if (is_null($user->email_verified_at)) {
+            // Kita bisa membuat ulang OTP dan mengirim notifikasi lagi jika perlu,
+            // atau cukup beri pesan error.
+            
+            return response()->json([
+                'message' => 'Akun Anda belum diverifikasi. Silakan masukkan kode OTP yang telah dikirim.',
+                'verification_required' => true, // Kirim flag ini agar frontend tahu harus navigasi ke halaman OTP
+            ], 403); // 403 Forbidden adalah status yang tepat
+        }
+
         // Hapus token lama jika ada, dan buat yang baru
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
