@@ -80,7 +80,7 @@ class OrderController extends Controller
         $shippingDiscount = 0;
         // (Asumsikan Anda sudah memiliki helper 'validateVoucher' di controller ini)
         if (!empty($validatedData['product_voucher_code'])) {
-            $productVoucher = $this->validateVoucher($validatedData['product_voucher_code'], 'product', $subtotal);
+            $productVoucher = $this->validateVoucher($validatedData['product_voucher_code'], 'product', $subtotal, $activityLogger);
             if (!$productVoucher instanceof Voucher) { // Jika validasi gagal
                 return response()->json(['message' => 'Voucher produk tidak valid.', 'errors' => ['product_voucher_code' => $productVoucher['error']]], 422);
             }
@@ -89,7 +89,7 @@ class OrderController extends Controller
         }
 
         if (!empty($validatedData['shipping_voucher_code'])) {
-            $shippingVoucher = $this->validateVoucher($validatedData['shipping_voucher_code'], 'shipping', $subtotal);
+            $shippingVoucher = $this->validateVoucher($validatedData['shipping_voucher_code'], 'shipping', $subtotal, $activityLogger);
             if (!$shippingVoucher instanceof Voucher) { // Jika validasi gagal
                 return response()->json(['message' => 'Voucher ongkir tidak valid.', 'errors' => ['shipping_voucher_code' => $shippingVoucher['error']]], 422);
             }

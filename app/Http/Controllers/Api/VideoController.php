@@ -20,10 +20,10 @@ class VideoController extends Controller
         
         if ($limit) {
             // Jika ada limit, gunakan paginate
-            $videos = Video::latest()->paginate($limit);
+            $videos = Video::inRandomOrder()->paginate($limit);
         } else {
             // Jika tidak ada limit, ambil semua
-            $videos = Video::latest()->get();
+            $videos = Video::inRandomOrder()->get();
         }
         
         // $activityLogger->log('video_viewed', $videos);
