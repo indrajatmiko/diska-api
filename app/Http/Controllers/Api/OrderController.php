@@ -84,6 +84,7 @@ class OrderController extends Controller
             if (!$productVoucher instanceof Voucher) { // Jika validasi gagal
                 return response()->json(['message' => 'Voucher produk tidak valid.', 'errors' => ['product_voucher_code' => $productVoucher['error']]], 422);
             }
+            $activityLogger->log('voucher_validated', $productVoucher);
             if ($productVoucher->type === 'product_fixed') $productDiscount = $productVoucher->value;
             if ($productVoucher->type === 'product_percentage') $productDiscount = floor(($productVoucher->value / 100) * $subtotal);
         }
@@ -93,6 +94,7 @@ class OrderController extends Controller
             if (!$shippingVoucher instanceof Voucher) { // Jika validasi gagal
                 return response()->json(['message' => 'Voucher ongkir tidak valid.', 'errors' => ['shipping_voucher_code' => $shippingVoucher['error']]], 422);
             }
+            $activityLogger->log('voucher_validated', $productVoucher);
             $shippingDiscount = min($shippingVoucher->value, $validatedData['shipping_cost']);
         }
         
@@ -189,7 +191,7 @@ class OrderController extends Controller
      * @param int $subtotal
      * @return Voucher|array
      */
-    private function validateVoucher(string $code, string $voucherCategory, int $subtotal, ActivityLoggerService $activityLogger)
+    private function validateVoucher(string $code, string $voucherCategory, int $subtotal)
     {
         $voucher = Voucher::where('code', $code)->first();
         $now = now();
@@ -209,7 +211,6 @@ class OrderController extends Controller
         if ($now->isAfter($voucher->end_date)) return ['error' => 'Voucher telah kedaluwarsa.'];
         if ($subtotal < $voucher->min_purchase) return ['error' => 'Pembelian tidak memenuhi syarat minimal.'];
 
-        $activityLogger->log('validate_voucher', $order);
         return $voucher;
     }
 
