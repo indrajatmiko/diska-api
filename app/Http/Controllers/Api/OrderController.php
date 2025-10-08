@@ -94,7 +94,7 @@ class OrderController extends Controller
             if (!$shippingVoucher instanceof Voucher) { // Jika validasi gagal
                 return response()->json(['message' => 'Voucher ongkir tidak valid.', 'errors' => ['shipping_voucher_code' => $shippingVoucher['error']]], 422);
             }
-            $activityLogger->log('voucher_validated', $productVoucher);
+            $activityLogger->log('voucher_validated', $shippingVoucher);
             $shippingDiscount = min($shippingVoucher->value, $validatedData['shipping_cost']);
         }
         
