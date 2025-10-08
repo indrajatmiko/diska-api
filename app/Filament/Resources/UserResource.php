@@ -15,6 +15,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Forms\Components\DateTimePicker;
 
 class UserResource extends Resource
 {
@@ -31,6 +32,7 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
                         Forms\Components\TextInput::make('phone_number')->tel()->required()->unique(ignoreRecord: true),
                         Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn ($state) => Hash::make($state))->dehydrated(fn ($state) => filled($state))->required(fn (string $operation): bool => $operation === 'create'),
+                        Forms\Components\DateTimePicker::make('otp_expires_at')->format('Y-m-d H:i:s')->required(),
                     ])->columns(2),
                 
                 // Tambahkan Section baru untuk Role
@@ -51,6 +53,8 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('phone_number')->searchable(),
+                Tables\Columns\TextColumn::make('otp_code')
+                    ->label('OTP Code'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
