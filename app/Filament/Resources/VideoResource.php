@@ -38,6 +38,7 @@ class VideoResource extends Resource
                             ->image()
                             ->disk('public')
                             ->directory('video-thumbnails')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']) // Allow webp
                             ->required(),
                     ])->columns(2),
 
@@ -52,6 +53,7 @@ class VideoResource extends Resource
                         Forms\Components\FileUpload::make('user_avatar_url')
                             ->label('User Avatar')
                             ->image()
+                            ->required()
                             ->disk('public')
                             ->directory('user-avatars')
                             ->imageEditor(), // Aktifkan editor gambar
