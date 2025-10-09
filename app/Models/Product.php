@@ -19,7 +19,7 @@ class Product extends Model
      */
     public function images(): HasMany
     {
-        return $this->hasMany(ProductImage::class)->oldest();
+        return $this->hasMany(ProductImage::class)->latest();
     }
 
     /**
