@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\UserAddressController;
 use App\Http\Controllers\Api\ResellerController;
 use App\Http\Controllers\Api\PageController;
-
+use App\Http\Controllers\Api\UserController;
 
 // Rute publik (tidak perlu login)
 Route::post('/register', [AuthController::class, 'register']);
@@ -65,4 +65,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/warehouses', [WarehouseController::class, 'index']);
     // Route::get('/warehouses/{warehouse}', [WarehouseController::class, 'show']);
     
+    // =========================================================
+    // ==> RUTE BARU UNTUK PENGHAPUSAN AKUN <==
+    // =========================================================
+    Route::post('/user/delete-account', [UserController::class, 'requestDeletion']);
 });
